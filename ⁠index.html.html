@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#111A2E">
+<title>حاسبة الرياضيات الذكية</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MathSmart">
+
+<style>
+/* ==========================================================
+   نظام الألوان والتصميم العصري (Modern Tablet UI)
+   ========================================================== */
+:root {
+  --bg-main: #0B111E;
+  --bg-surface: #111A2E;
+  --bg-card: #17233D;
+  --bg-card-hover: #203154;
+  --border-subtle: #243557;
+  --border-active: #3E588F;
+  
+  --pen-primary: #FF3856;
+  --pen-gradient: linear-gradient(135deg, #FF3856, #E01E3C);
+  --accent-blue: #388BFD;
+  --accent-blue-grad: linear-gradient(135deg, #388BFD, #1D6AE5);
+  --gold-star: #F5A623;
+  --success-green: #2EA043;
+  
+  --text-pure: #FFFFFF;
+  --text-main: #E8EEF8;
+  --text-muted: #8EA4C7;
+  
+  --paper-bg: #F8FAFC;
+  --paper-grid: #CBD5E1;
+  --paper-line: #E2E8F0;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  
+  --deck-h: 46vh;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom);
+  overflow: hidden;
+}
+
+/* Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  z-index: 10;
+}
+
+h1 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-pure);
+}
+
+.logo-badge {
+  background: var(--pen-gradient);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Times New Roman", serif;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(255, 56, 86, 0.4);
+}
+
+h1 .sub {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 400;
+  background: var(--bg-card);
+  padding: 3px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border-subtle);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  border-radius: 99px;
+  font-size: 12px;
+  padding: 6px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.chip:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-active);
+}
+
+.chip.on {
+  background: var(--pen-gradient);
+  border-color: var(--pen-primary);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(255, 56, 86, 0.35);
+}
+
+.chip.accent.on {
+  background: var(--accent-blue-grad);
+  border-color: var(--accent-blue);
+  box-shadow: 0 2px 10px rgba(56, 139, 253, 0.35);
+}
+
+/* ==========================================================
+   المساحة الرئيسية وتقسيم التابلت (Adaptive Grid)
+   ========================================================== */
+.main-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (min-width: 860px) {
+  .main-workspace {
+    flex-direction: row-reverse;
+  }
+  .left-stage {
+    flex: 1.25;
+    padding: 16px 16px 16px 8px !important;
+    gap: 10px !important;
+  }
+  .right-deck {
+    flex: 1.05;
+    height: 100% !important;
+    border-top: none !important;
+    border-inline-start: 1px solid var(--border-subtle);
+    background: var(--bg-surface) !important;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.15);
+  }
+  .keys {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .left-stage { flex: 1.35; }
+  .right-deck { flex: 1.1; }
+  .keys { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; }
+}
+
+/* ==========================================================
+   لوح الورقة والمعادلات (Sheet Stage)
+   ========================================================== */
+.left-stage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 12px 0;
+  gap: 8px;
+}
+
+.sheet-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--paper-bg);
+  color: #0F172A;
+  background-image: 
+    linear-gradient(var(--paper-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.7);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.sheet-wrapper:before {
+  content: "";
+  position: absolute;
+  inset-inline-end: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--pen-primary);
+  opacity: 0.85;
+  z-index: 3;
+}
+
+#preview {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 22px;
+  direction: ltr;
+  position: relative;
+  z-index: 2;
+}
+
+#preview .ph {
+  color: #64748B;
+  font-size: 14.5px;
+  direction: rtl;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Canvas Scratchpad */
+#scratchpad {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+  touch-action: none;
+}
+#scratchpad.active {
+  pointer-events: auto;
+  cursor: crosshair;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* 2D Graph */
+.graph-container {
+  display: none;
+  position: relative;
+  height: 250px;
+  background: #060B14;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+.graph-container.show { display: flex; }
+#graphCanvas { width: 100%; height: 100%; }
+
+.graph-ctrls {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+}
+.graph-btn {
+  background: rgba(17, 26, 46, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.graph-btn:hover { background: var(--bg-card-hover); }
+
+/* LaTeX view */
+.src-row {
+  display: none;
+  border-top: 1px dashed var(--paper-grid);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  z-index: 3;
+}
+#src, #srcView {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  direction: ltr;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #0F172A;
+  padding: 10px 14px;
+  height: 52px;
+  user-select: text;
+}
+#src { resize: none; display: none; }
+#srcView { overflow: auto; white-space: pre-wrap; word-break: break-all; cursor: text; }
+#srcView .caret {
+  display: inline-block;
+  width: 2.2px;
+  height: 1.15em;
+  background: var(--pen-primary);
+  vertical-align: -0.2em;
+  animation: bl 1s step-end infinite;
+}
+#srcView .selxt { background: rgba(255, 56, 86, 0.22); border-radius: 2px; }
+#srcView .hint { color: #94A3B8; }
+body.showtex .src-row, body.typing .src-row { display: flex; }
+body.typing #src { display: block; }
+body.typing #srcView { display: none; }
+
+.src-row .lbl {
+  writing-mode: vertical-rl;
+  font-size: 10px;
+  color: #475569;
+  padding: 6px 6px;
+  border-inline-start: 1px dashed var(--paper-grid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Solution Box */
+.solbox {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #131F38, #0E182C);
+  border: 1px solid var(--border-active);
+  max-height: 220px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+.solbar { display: flex; gap: 8px; justify-content: flex-end; }
+.solout {
+  flex: 1;
+  color: var(--text-pure);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-x: auto;
+  direction: ltr;
+}
+.solout .mrow { font-size: 19px !important; justify-content: flex-start; }
+.solerr { font-size: 13.5px; color: #FFA3AF; font-weight: 500; }
+.solbtn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.15s;
+}
+.solbtn:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+
+/* Tools bar */
+.tools {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.tools::-webkit-scrollbar { display: none; }
+.tool {
+  flex: 0 0 auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+.tool:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+.tool:active { transform: scale(0.96); }
+.tool.primary {
+  background: var(--pen-gradient);
+  border-color: var(--pen-primary);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(255, 56, 86, 0.35);
+}
+.tool.graph-toggle.on {
+  background: var(--accent-blue-grad);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+/* Nav Bar */
+.nav {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  padding: 2px 0 6px;
+  flex-shrink: 0;
+}
+.nav button {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-bottom: 3px solid #080D18;
+  color: var(--text-pure);
+  border-radius: var(--radius-sm);
+  padding: 7px 0;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+}
+.nav button .t { font-size: 9.5px; color: var(--text-muted); margin-top: 2px; }
+.nav button:hover { background: var(--bg-card); }
+.nav button:active {
+  border-bottom-width: 1px;
+  transform: translateY(2px);
+}
+
+/* ==========================================================
+   لوحة المفاتيح التفاعلية (Keyboard Deck)
+   ========================================================== */
+.right-deck {
+  background: linear-gradient(180deg, var(--bg-surface), #0D1424);
+  border-top: 1px solid var(--border-subtle);
+  padding: 8px 10px 12px;
+  height: var(--deck-h);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.searchbar { padding: 0 2px 8px; }
+.searchbar input {
+  width: 100%;
+  background: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-pure);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  user-select: text;
+}
+.searchbar input:focus { border-color: var(--accent-blue); }
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 2px 8px;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+.tab:hover { color: var(--text-main); border-color: var(--border-active); }
+.tab[aria-selected="true"] {
+  background: var(--text-pure);
+  color: var(--bg-main);
+  border-color: var(--text-pure);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.25);
+}
+
+.keys {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px 2px 6px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-content: start;
+}
+.keys.wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.k {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-bottom: 3px solid #090E1A;
+  border-radius: var(--radius-sm);
+  min-height: 48px;
+  color: var(--text-pure);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 4px 2px;
+  font-size: 15.5px;
+  transition: all 0.08s ease;
+}
+.k:hover { background: var(--bg-card-hover); }
+.k:active {
+  border-bottom-width: 1px;
+  transform: translateY(2px);
+  background: #253961;
+}
+.k .cap { font-size: 9px; color: var(--text-muted); line-height: 1; }
+.k .lab { display: flex; align-items: center; justify-content: center; }
+.k.tmpl { font-size: 12px; }
+
+.empty {
+  grid-column: 1/-1;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 22px;
+}
+
+/* Toast Notification */
+#toast {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 24px;
+  margin: auto;
+  width: max-content;
+  max-width: 85%;
+  background: rgba(11, 17, 30, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-active);
+  color: var(--text-pure);
+  padding: 9px 18px;
+  border-radius: 99px;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  z-index: 999;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  font-weight: 500;
+}
+#toast.show { opacity: 1; transform: none; }
+
+/* Math Engine Typography */
+.mrow {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: "KaTeX_Math", "Cambria Math", "Times New Roman", Georgia, serif;
+  font-size: 28px;
+  line-height: 1.15;
+  white-space: nowrap;
+  margin: 4px 0;
+}
+.k .mrow { font-size: 15.5px; }
+.mi { font-style: italic; padding: 0 0.05em; }
+.mn, .mo { padding: 0 0.06em; }
+.mtxt {
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.72em;
+  direction: rtl;
+  unicode-bidi: isolate;
+  padding: 0 0.2em;
+}
+.fname { padding: 0 0.12em; font-family: -apple-system, sans-serif; font-size: 0.88em; }
+.frac { display: inline-flex; flex-direction: column; align-items: stretch; margin: 0 0.14em; vertical-align: middle; }
+.frac > span { padding: 0.05em 0.3em; text-align: center; }
+.frac .den { border-top: 1.8px solid currentColor; }
+.binom { display: inline-flex; flex-direction: column; align-items: stretch; margin: 0 0.1em; }
+.binom > span { padding: 0 0.3em; text-align: center; }
+.srt { display: inline-flex; align-items: stretch; margin: 0 0.06em; }
+.srt .rad { font-size: 1.05em; line-height: 1; align-self: flex-end; }
+.srt .rbody { border-top: 1.8px solid currentColor; padding: 0.12em 0.18em 0 0.12em; }
+.srt .idx { font-size: 0.55em; align-self: flex-start; margin-inline-end: -0.42em; position: relative; top: -0.15em; z-index: 1; }
+.sup { font-size: 0.68em; position: relative; top: -0.55em; }
+.sub { font-size: 0.68em; position: relative; top: 0.35em; }
+.bop { display: inline-flex; flex-direction: column; align-items: center; margin: 0 0.16em; }
+.bop .big { font-size: 1.45em; line-height: 1; }
+.bop .lim { font-size: 0.54em; line-height: 1.2; }
+.ilim { display: inline-flex; flex-direction: column; justify-content: space-between; font-size: 0.54em; align-self: stretch; line-height: 1.1; margin-inline-start: 0.05em; }
+.ovl { display: inline-flex; flex-direction: column; align-items: center; }
+.ovl .bar { border-top: 1.8px solid currentColor; align-self: stretch; height: 0; }
+.ovl .mark { font-size: 0.75em; line-height: 0.7; }
+.fenced { display: inline-flex; align-items: center; }
+.dl { font-family: "Times New Roman", serif; padding: 0 0.04em; }
+.mtx { display: inline-grid; gap: 0.12em 0.7em; padding: 0 0.18em; justify-items: center; }
+.mtx.lft { justify-items: start; }
+.ph-box {
+  display: inline-block;
+  width: 0.68em;
+  height: 0.68em;
+  border: 2px dashed var(--pen-primary);
+  border-radius: 4px;
+  margin: 0 0.12em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ph-box.act { background: var(--pen-primary); border-style: solid; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>
+      <div class="logo-badge">∑</div>
+      لوحة المعادلات الذكية
+      <span class="sub">Tablet Edition</span>
+    </h1>
+    <div class="header-actions">
+      <button class="chip accent" id="penToggle" title="مسودة الرسم بالقلم">✏️ مسودة قلم</button>
+      <button class="chip" id="texToggle" title="إظهار كود LaTeX">LaTeX</button>
+      <button class="chip" id="kbToggle" title="كيبورد الهاتف والكتابة">⌨ حروف</button>
+      <button class="chip" id="digitToggle" title="شكل الأرقام">123</button>
+    </div>
+  </header>
+
+  <div class="main-workspace">
+    <!-- منطقة العمل والورقة والمعاينة (Left Stage) -->
+    <div class="left-stage">
+      <!-- 2D Graph -->
+      <div class="graph-container" id="graphWrap">
+        <canvas id="graphCanvas"></canvas>
+        <div class="graph-ctrls">
+          <button class="graph-btn" id="graphReset">إعادة ضبط المركز</button>
+          <button class="graph-btn" id="graphClose">✕ إغلاق</button>
+        </div>
+      </div>
+
+      <div class="sheet-wrapper">
+        <canvas id="scratchpad"></canvas>
+        <div id="preview"><span class="ph">اختر رمزاً من اللوحة للبدء، أو اكتب دالة لرسمها وحلها</span></div>
+        <div class="src-row">
+          <div id="srcView" dir="ltr" title="اضغط لفتح كيبورد النظام"></div>
+          <textarea id="src" readonly spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="\frac{a}{b}"></textarea>
+          <div class="lbl">LaTeX</div>
+        </div>
+      </div>
+
+      <!-- Solution Box -->
+      <div class="solbox" id="solbox">
+        <div id="solout" class="solout"></div>
+        <div class="solbar">
+          <button class="solbtn" id="solIns">أدرج الخطوات في الورقة</button>
+          <button class="solbtn" id="solClose">إغلاق ✕</button>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <div class="tools">
+        <button class="tool primary" id="solve">⚡ حلّ المعادلة</button>
+        <button class="tool graph-toggle" id="graphBtn">📈 رسم بياني 2D</button>
+        <button class="tool" id="copyImg">📷 نسخ صورة</button>
+        <button class="tool" id="dl">💾 تنزيل صورة</button>
+        <button class="tool" id="copyTxt">📝 نسخ نص</button>
+        <button class="tool" id="copyTex">📋 نسخ LaTeX</button>
+        <button class="tool" id="fav">★ حفظ</button>
+        <button class="tool" id="clrPen">🧹 مسح القلم</button>
+        <button class="tool" id="selftest">🔍 فحص ذاتي</button>
+        <button class="tool" id="websolve">🌐 بحث الويب</button>
+      </div>
+
+      <!-- Quick Nav -->
+      <div class="nav">
+        <button id="bk">⌫<span class="t">حذف</span></button>
+        <button id="left">◀<span class="t">يسار</span></button>
+        <button id="right">▶<span class="t">يمين</span></button>
+        <button id="out">↱<span class="t">خروج</span></button>
+        <button id="slot">▭<span class="t">فراغ تالي</span></button>
+        <button id="nl">↵<span class="t">سطر</span></button>
+        <button id="undo">↶<span class="t">تراجع</span></button>
+        <button id="clr">✕<span class="t">مسح</span></button>
+      </div>
+    </div>
+
+    <!-- Keyboard Deck (Right/Bottom Deck) -->
+    <div class="right-deck">
+      <div class="searchbar"><input id="q" placeholder="🔍 ابحث عن رمز أو قانون... (تكامل، مصفوفة، زاوية)"></div>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="keys" id="keys"></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ==========================================================
+   محرك عرض LaTeX داخلي خفيف
+   ========================================================== */
+const SYM={
+ times:'\u00D7',div:'\u00F7',cdot:'\u00B7',pm:'\u00B1',mp:'\u2213',neq:'\u2260',leq:'\u2264',geq:'\u2265',
+ ll:'\u226A',gg:'\u226B',approx:'\u2248',equiv:'\u2261',cong:'\u2245',ncong:'\u2247',sim:'\u223C',propto:'\u221D',
+ doteq:'\u2250',nless:'\u226E',infty:'\u221E',circ:'\u2218',ldots:'\u2026',cdots:'\u22EF',vdots:'\u22EE',ddots:'\u22F1',
+ in:'\u2208',notin:'\u2209',subset:'\u2282',subseteq:'\u2286',supset:'\u2283',cup:'\u222A',cap:'\u2229',
+ setminus:'\u2216',emptyset:'\u2205',forall:'\u2200',exists:'\u2203',nexists:'\u2204',neg:'\u00AC',
+ wedge:'\u2227',vee:'\u2228',therefore:'\u2234',because:'\u2235',mid:'\u2223',
+ angle:'\u2220',triangle:'\u25B3',square:'\u25A1',odot:'\u2299',parallel:'\u2225',nparallel:'\u2226',perp:'\u22A5',
+ frown:'\u2312',checkmark:'\u2713',prime:'\u2032',ell:'\u2113',hbar:'\u210F',partial:'\u2202',nabla:'\u2207',
+ to:'\u2192',rightarrow:'\u2192',leftarrow:'\u2190',leftrightarrow:'\u2194',longrightarrow:'\u27F6',
+ Rightarrow:'\u21D2',Leftrightarrow:'\u21D4',mapsto:'\u21A6',uparrow:'\u2191',downarrow:'\u2193',Updownarrow:'\u21D5',
+ oplus:'\u2295',otimes:'\u2297',lfloor:'\u230A',rfloor:'\u230B',lceil:'\u2308',rceil:'\u2309',
+ alpha:'\u03B1',beta:'\u03B2',gamma:'\u03B3',delta:'\u03B4',epsilon:'\u03B5',varepsilon:'\u03B5',zeta:'\u03B6',
+ eta:'\u03B7',theta:'\u03B8',iota:'\u03B9',kappa:'\u03BA',lambda:'\u03BB',mu:'\u03BC',nu:'\u03BD',xi:'\u03BE',
+ rho:'\u03C1',sigma:'\u03C3',tau:'\u03C4',upsilon:'\u03C5',phi:'\u03D5',varphi:'\u03C6',chi:'\u03C7',psi:'\u03C8',
+ omega:'\u03C9',pi:'\u03C0',Gamma:'\u0393',Delta:'\u0394',Theta:'\u0398',Lambda:'\u039B',Xi:'\u039E',Pi:'\u03A0',
+ Sigma:'\u03A3',Phi:'\u03A6',Psi:'\u03A8',Omega:'\u03A9',
+ '%':'%','&':'&','$':'$','#':'#','{':'{','}':'}','_':'_',',':'\u2009',';':'\u2005',':':'\u2005','!':'','quad':'\u2003',qquad:'\u2003\u2003',' ':' '
+};
+const BIG={sum:'\u2211',prod:'\u220F',int:'\u222B',iint:'\u222C',iiint:'\u222D',oint:'\u222E',lim:'lim'};
+const FUN=['sin','cos','tan','csc','sec','cot','sinh','cosh','tanh','log','ln','exp','max','min','det','gcd'];
+const BB={N:'\u2115',Z:'\u2124',Q:'\u211A',R:'\u211D',C:'\u2102',P:'\u2119'};
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function lex(s){
+  const out=[]; let i=0;
+  while(i<s.length){
+    const c=s[i], p=i;
+    if(c==='\\'){ const m=/^\\([a-zA-Z]+|.)/.exec(s.slice(i)); i+=m[0].length;
+      if((m[1]==='left'||m[1]==='right')&&i<s.length){
+        if(s[i]==='\\'){ const d=/^\\([a-zA-Z]+|.)/.exec(s.slice(i)); i+=d[0].length; } else i++;
+      }
+      out.push({t:'cmd',v:m[1],p:p,e:i}); }
+    else if('{}^_&[]'.includes(c)){ out.push({t:c,p:p,e:i+1}); i++; }
+    else { out.push({t:'c',v:c,p:p,e:i+1}); i++; }
+  }
+  return out;
+}
+function delimOf(s,tk){
+  const raw=s.slice(tk.p,tk.e).replace(/^\\(left|right)/,'');
+  if(!raw) return '';
+  if(raw[0]==='\\'){ const n=raw.slice(1); return SYM[n]!==undefined?SYM[n]:n; }
+  return raw;
+}
+function matchBrace(tk,i){ let d=0; for(let j=i;j<tk.length;j++){ if(tk[j].t==='{')d++; else if(tk[j].t==='}'){d--; if(!d)return j;} } return tk.length; }
+function readArg(tk,i){
+  while(tk[i]&&tk[i].t==='c'&&tk[i].v===' ')i++;
+  if(!tk[i]) return {html:'',i:i};
+  if(tk[i].t==='{'){ const e=matchBrace(tk,i); return {html:build(tk.slice(i+1,e)),i:e+1}; }
+  return {html:build([tk[i]]),i:i+1};
+}
+function readOpt(tk,i){
+  if(tk[i]&&tk[i].t==='['){ let j=i+1,d=0; while(j<tk.length&&!(tk[j].t===']'&&!d)){ if(tk[j].t==='[')d++; if(tk[j].t===']')d--; j++; }
+    return {html:build(tk.slice(i+1,j)),i:j+1}; }
+  return null;
+}
+function splitTop(tk,isSep){
+  const parts=[]; let cur=[],d=0,env=0;
+  for(let i=0;i<tk.length;i++){ const t=tk[i];
+    if(t.t==='{')d++; if(t.t==='}')d--;
+    if(t.t==='cmd'&&t.v==='begin')env++; if(t.t==='cmd'&&t.v==='end')env--;
+    if(!d&&!env&&isSep(t)){ parts.push(cur); cur=[]; } else cur.push(t);
+  }
+  parts.push(cur); return parts;
+}
+function envName(tk,i){ if(tk[i]&&tk[i].t==='{'){ const e=matchBrace(tk,i); return {name:tk.slice(i+1,e).map(x=>x.v||'').join(''),i:e+1}; } return {name:'',i:i}; }
+
+let PH=0, SRC='';
+function build(tk){
+  let out='',i=0;
+  const push=h=>{ out+=h; };
+  while(i<tk.length){
+    const t=tk[i]; let piece=null;
+    if(t.t==='c'){
+      const c=t.v;
+      if(c==='#'){ piece='<span class="ph-box" data-ph="'+(PH++)+'"></span>'; i++; }
+      else if(c===' '){ piece='<span class="mo">&nbsp;</span>'; i++; }
+      else if(/[a-zA-Z]/.test(c)){ piece='<span class="mi">'+c+'</span>'; i++; }
+      else if(/[0-9\u0660-\u0669.,\u060C]/.test(c)){ piece='<span class="mn">'+c+'</span>'; i++; }
+      else if('()[]|'.includes(c)){ piece='<span class="dl">'+esc(c)+'</span>'; i++; }
+      else if(c==='-'){ piece='<span class="mo">\u2212</span>'; i++; }
+      else { piece='<span class="mo">'+esc(c)+'</span>'; i++; }
+    }
+    else if(t.t==='{'){ const e=matchBrace(tk,i); piece='<span class="mrow" style="font-size:1em">'+build(tk.slice(i+1,e))+'</span>'; i=e+1; }
+    else if(t.t==='^'||t.t==='_'){
+      const a=readArg(tk,i+1);
+      out+='<span class="'+(t.t==='^'?'sup':'sub')+'">'+a.html+'</span>'; i=a.i; continue;
+    }
+    else if(t.t==='cmd'){
+      const v=t.v; i++;
+      if(v==='frac'||v==='dfrac'||v==='tfrac'){
+        const a=readArg(tk,i); const b=readArg(tk,a.i); i=b.i;
+        piece='<span class="frac"><span class="num">'+a.html+'</span><span class="den">'+b.html+'</span></span>';
+      }
+      else if(v==='binom'){
+        const a=readArg(tk,i); const b=readArg(tk,a.i); i=b.i;
+        piece='<span class="fenced"><span class="dl">(</span><span class="binom"><span>'+a.html+'</span><span>'+b.html+'</span></span><span class="dl">)</span></span>';
+      }
+      else if(v==='sqrt'){
+        const o=readOpt(tk,i); if(o) i=o.i;
+        const a=readArg(tk,i); i=a.i;
+        piece='<span class="srt">'+(o?'<span class="idx">'+o.html+'</span>':'')+
+              '<span class="rad">\u221A</span><span class="rbody">'+a.html+'</span></span>';
+      }
+      else if(v==='text'||v==='mathrm'||v==='operatorname'){
+        let j=i,txt='';
+        if(tk[j]&&tk[j].t==='{'){ const e=matchBrace(tk,j); txt=tk.slice(j+1,e).map(x=>x.v!==undefined?x.v:'').join(''); i=e+1; }
+        piece='<span class="mtxt">'+esc(txt)+'</span>';
+      }
+      else if(v==='mathbb'){ const a=readArg(tk,i); i=a.i;
+        const L=a.html.replace(/<[^>]+>/g,''); piece='<span class="mo">'+(BB[L]||L)+'</span>'; }
+      else if(v==='overline'||v==='bar'){ const a=readArg(tk,i); i=a.i;
+        piece='<span class="ovl"><span class="bar"></span><span>'+a.html+'</span></span>'; }
+      else if(v==='vec'||v==='overrightarrow'){ const a=readArg(tk,i); i=a.i;
+        piece='<span class="ovl"><span class="mark">\u2192</span><span>'+a.html+'</span></span>'; }
+      else if(v==='overleftrightarrow'){ const a=readArg(tk,i); i=a.i;
+        piece='<span class="ovl"><span class="mark">\u2194</span><span>'+a.html+'</span></span>'; }
+      else if(v==='hat'){ const a=readArg(tk,i); i=a.i;
+        piece='<span class="ovl"><span class="mark">^</span><span>'+a.html+'</span></span>'; }
+      else if(v==='left'){
+        let dc=delimOf(SRC,t);
+        let depth=0,j=i;
+        while(j<tk.length){ const x=tk[j]; if(x.t==='cmd'&&x.v==='left')depth++;
+          if(x.t==='cmd'&&x.v==='right'){ if(!depth)break; depth--; } j++; }
+        const body=build(tk.slice(i,j));
+        let rc=tk[j]?delimOf(SRC,tk[j]):'';
+        i=j+1;
+        if(dc==='.')dc=''; if(rc==='.')rc='';
+        piece='<span class="fenced"><span class="dl">'+esc(dc)+'</span><span class="fbody">'+body+'</span><span class="dl">'+esc(rc)+'</span></span>';
+      }
+      else if(v==='begin'){
+        const n=envName(tk,i); i=n.i;
+        let depth=0,j=i;
+        while(j<tk.length){ const x=tk[j];
+          if(x.t==='cmd'&&x.v==='begin')depth++;
+          if(x.t==='cmd'&&x.v==='end'){ if(!depth)break; depth--; } j++; }
+        const body=tk.slice(i,j);
+        const en=envName(tk,j+1); i=en.i;
+        piece=matrix(body,n.name);
+      }
+      else if(BIG[v]){
+        let sup='',sub='';
+        for(let g=0;g<2;g++){
+          if(tk[i]&&(tk[i].t==='^'||tk[i].t==='_')){ const k=tk[i].t; const a=readArg(tk,i+1); i=a.i;
+            if(k==='^')sup=a.html; else sub=a.html; }
+        }
+        if(v==='int'||v==='iint'||v==='iiint'||v==='oint'){
+          piece='<span class="mo" style="font-size:1.5em;line-height:1">'+BIG[v]+'</span>'+
+                ((sup||sub)?'<span class="ilim"><span>'+sup+'</span><span>'+sub+'</span></span>':'');
+        }else{
+          piece='<span class="bop">'+(sup?'<span class="lim">'+sup+'</span>':'')+
+                '<span class="'+(v==='lim'?'fname':'big')+'">'+BIG[v]+'</span>'+
+                (sub?'<span class="lim">'+sub+'</span>':'')+'</span>';
+        }
+      }
+      else if(FUN.includes(v)){ piece='<span class="fname">'+v+'</span>'; }
+      else if(v==='\\'){ piece='<br>'; }
+      else if(v==='displaystyle'||v==='limits'||v==='nolimits'){ piece=''; }
+      else if(SYM[v]!==undefined){ piece='<span class="mo">'+esc(SYM[v])+'</span>'; }
+      else { piece='<span class="mo">'+esc(v)+'</span>'; }
+    }
+    else if(t.t===']'||t.t==='['){ piece='<span class="dl">'+t.t+'</span>'; i++; }
+    else { i++; }
+    if(piece!==null){
+      if(t.p!==undefined) piece=piece.replace(/^<span/,'<span data-p="'+t.p+'" data-e="'+(tk[i-1]?tk[i-1].e:t.e)+'"');
+      push(piece);
+    }
+  }
+  return out;
+}
+
+function matrix(body,name){
+  const rows=splitTop(body,t=>t.t==='cmd'&&t.v==='\\');
+  const cells=rows.map(r=>splitTop(r,t=>t.t==='&'));
+  const cols=Math.max(...cells.map(r=>r.length));
+  let inner='<span class="mtx'+(name==='cases'||name==='aligned'?' lft':'')+'" style="grid-template-columns:repeat('+cols+',auto)">';
+  cells.forEach(r=>{ for(let c=0;c<cols;c++){ inner+='<span>'+(r[c]?build(r[c]):'')+'</span>'; } });
+  inner+='</span>';
+  const D={pmatrix:['(',')'],bmatrix:['[',']'],vmatrix:['|','|'],Bmatrix:['{','}'],cases:['{',''],matrix:['',''],aligned:['','']};
+  const d=D[name]||['',''];
+  return '<span class="fenced"><span class="dl">'+esc(d[0])+'</span><span class="fbody">'+inner+'</span><span class="dl">'+esc(d[1])+'</span></span>';
+}
+
+function typeset(tex,el){
+  PH=0; SRC=tex;
+  const tk=lex(tex);
+  const lines=splitTop(tk,t=>t.t==='cmd'&&t.v==='\\');
+  el.innerHTML=lines.map(l=>'<span class="mrow">'+build(l)+'</span>').join('');
+}
+
+/* ==========================================================
+   مفاتيح اللوحة
+   ========================================================== */
+const S=(k,x,n,cls)=>({k,x,n:n||'',cls:cls||''});
+const CATS=[
+{id:'basic',name:'أساسي',keys:[
+ S('7','7'),S('8','8'),S('9','9'),S('\\div','\\div ','قسمة'),S('(','\\left(#\\right)','قوس كامل'),S(')','','خروج','exit'),
+ S('4','4'),S('5','5'),S('6','6'),S('\\times','\\times ','ضرب'),S('[','\\left[#\\right]','قوس مربع'),S(']','','خروج','exit'),
+ S('1','1'),S('2','2'),S('3','3'),S('-','-','طرح'),S('\\{','\\left\\{#\\right\\}','قوس معقوف'),S('\\}','','خروج','exit'),
+ S('0','0'),S('.','.','فاصلة'),S('\\text{،}','،','فاصلة عربية'),S('+','+','جمع'),S('=','=','يساوي'),S('\\neq','\\neq ','لا يساوي'),
+ S('\\frac{a}{b}','\\frac{#}{#}','كسر','over'),S('x^{2}','#^{2}','تربيع'),S('x^{3}','#^{3}','تكعيب'),S('x^{n}','#^{#}','أس'),S('x_{n}','#_{#}','دليل سفلي'),S('\\sqrt{x}','\\sqrt{#}','جذر'),
+ S('\\sqrt[n]{x}','\\sqrt[#]{#}','جذر نوني'),S('\\left|x\\right|','\\left|#\\right|','مطلق'),S('\\pm','\\pm ','زائد/ناقص'),S('x','x','متغير x'),S('y','y','متغير y'),S('\\pi','\\pi ','باي')
+]},
+{id:'algebra',name:'جبر ودوال',keys:[
+ S('x','x'),S('y','y'),S('z','z'),S('a','a'),S('b','b'),S('n','n'),
+ S('x^{2}','x^{2}'),S('x^{3}','x^{3}'),S('x^{n}','x^{n}'),S('x_{1}','x_{1}'),S('x_{2}','x_{2}'),S('x_{n}','x_{n}'),
+ S('f(x)','f\\left(#\\right)'),S('\\sin','\\sin #'),S('\\cos','\\cos #'),S('\\tan','\\tan #'),S('\\ln','\\ln #'),S('\\log','\\log #'),
+ S('e^{x}','e^{#}'),S('n!','#!','مضروب'),S('\\binom{n}{r}','\\binom{#}{#}','توافيق'),S('\\left|x\\right|','\\left|#\\right|'),
+ S('(a+b)^{2}','\\left(a+b\\right)^{2}','مربع ذات حدين','tmpl'),S('a^{2}-b^{2}','a^{2}-b^{2}','فرق مربعين','tmpl'),
+ S('\\text{القانون العام}','x=\\frac{-b\\pm\\sqrt{b^{2}-4ac}}{2a}','القانون العام','tmpl'),S('\\text{الميل}','m=\\frac{y_{2}-y_{1}}{x_{2}-x_{1}}','الميل','tmpl')
+]},
+{id:'calc',name:'تفاضل وتكامل',keys:[
+ S('\\lim_{x\\to a}','\\lim_{#\\to #}#','نهاية','tmpl'),S('\\sum','\\sum_{#}^{#}#','مجموع'),S('\\prod','\\prod_{#}^{#}#','جداء'),
+ S('\\int','\\int #\\,d#','تكامل'),S('\\int_{a}^{b}','\\int_{#}^{#}#\\,d#','تكامل محدد'),S('\\frac{d}{dx}','\\frac{d}{dx}#','مشتقة'),
+ S('\\frac{dy}{dx}','\\frac{dy}{dx}'),S('\\Delta','\\Delta '),S('\\nabla','\\nabla '),S('\\to','\\to '),S('\\infty','\\infty '),S('dx','\\,dx')
+]},
+{id:'geom',name:'هندسة ومثلثات',keys:[
+ S('\\angle','\\angle ','زاوية'),S('m\\angle A','m\\angle #'),S('\\triangle','\\triangle ','مثلث'),S('\\square','\\square '),S('\\odot','\\odot ','دائرة'),S('90^{\\circ}','^{\\circ}'),
+ S('\\parallel','\\parallel ','يوازي'),S('\\perp','\\perp ','يعامد'),S('\\cong','\\cong ','يطابق'),S('\\sim','\\sim ','يشابه'),
+ S('\\overline{AB}','\\overline{AB}'),S('\\overrightarrow{AB}','\\overrightarrow{AB}'),S('C=2\\pi r','C=2\\pi r','محيط دائرة','tmpl'),S('A=\\pi r^{2}','A=\\pi r^{2}','مساحة دائرة','tmpl'),
+ S('a^{2}+b^{2}=c^{2}','a^{2}+b^{2}=c^{2}','فيثاغورس','tmpl'),S('(x,y)','\\left(#,#\\right)','نقطة')
+]},
+{id:'mat',name:'مصفوفات ونظم',keys:[
+ S('\\begin{cases}a\\\\ b\\end{cases}','\\begin{cases}#\\\\ #\\end{cases}','نظام معادلتين','tmpl'),
+ S('\\begin{pmatrix}a & b\\\\ c & d\\end{pmatrix}','\\begin{pmatrix}# & #\\\\ # & #\\end{pmatrix}','مصفوفة 2x2','tmpl'),
+ S('\\begin{vmatrix}a & b\\\\ c & d\\end{vmatrix}','\\begin{vmatrix}# & #\\\\ # & #\\end{vmatrix}','محدد 2x2','tmpl'),
+ S('\\begin{aligned}a &= b\\\\ c &= d\\end{aligned}','\\begin{aligned}# &= #\\\\ &= #\\end{aligned}','محاذاة','tmpl')
+]},
+{id:'greek',name:'يوناني ورموز',keys:[
+ S('\\alpha','\\alpha '),S('\\beta','\\beta '),S('\\gamma','\\gamma '),S('\\delta','\\delta '),S('\\theta','\\theta '),S('\\lambda','\\lambda '),
+ S('\\mu','\\mu '),S('\\pi','\\pi '),S('\\sigma','\\sigma '),S('\\omega','\\omega '),S('\\Omega','\\Omega '),S('\\Delta','\\Delta '),
+ S('\\in','\\in '),S('\\notin','\\notin '),S('\\subset','\\subset '),S('\\cup','\\cup '),S('\\cap','\\cap '),S('\\emptyset','\\emptyset ')
+]}
+];
+
+const $=s=>document.querySelector(s);
+const src=$('#src'),preview=$('#preview'),keysEl=$('#keys'),tabsEl=$('#tabs');
+let active='basic',undoStack=[],arabicDigits=false,favs=[];
+const AR=['\u0660','\u0661','\u0662','\u0663','\u0664','\u0665','\u0666','\u0667','\u0668','\u0669'];
+
+const store={
+  async get(k){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;} },
+  async set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+};
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000);}
+
+function elemStart(v,pos){
+  if(pos<=0) return -1;
+  const rm=v.slice(0,pos).match(/\\right(\\[a-zA-Z]+|.)$/);
+  if(rm){ let d=0;
+    for(let i=pos-rm[0].length;i>=0;i--){
+      if(v.startsWith('\\right',i)){ d++; continue; }
+      if(v.startsWith('\\left',i)){ if(!d) return i; d--; }
+    } return 0; }
+  if(v[pos-1]==='}'){
+    let d=1, st=pos-2;
+    while(st>=0&&d){ if(v[st]==='}')d++; if(v[st]==='{')d--; if(d)st--; }
+    while(st>0&&v[st-1]==='}'){ let d2=1,k=st-2; while(k>=0&&d2){ if(v[k]==='}')d2++; if(v[k]==='{')d2--; if(d2)k--; } st=k; }
+    const pre=v.slice(0,st).match(/(\\[a-zA-Z]+)(\[[^\]]*\])?$/);
+    if(pre) st-=pre[0].length;
+    return Math.max(st,0);
+  }
+  const c=v[pos-1];
+  if(c===undefined||' +-=<>,;:&|{[(#'.includes(c)) return -1;
+  const cm=v.slice(0,pos).match(/\\[a-zA-Z]+\s?$/);
+  if(cm) return pos-cm[0].length;
+  return pos-1;
+}
+
+function pushUndo(){undoStack.push(src.value); if(undoStack.length>60)undoStack.shift();}
+function insert(tex){
+  pushUndo();
+  const s=src.selectionStart,e=src.selectionEnd,v=src.value;
+  src.value=v.slice(0,s)+tex+v.slice(e);
+  const p=tex.indexOf('#');
+  if(p>=0){src.selectionStart=s+p;src.selectionEnd=s+p+1;}
+  else{src.selectionStart=src.selectionEnd=s+tex.length;}
+  render();
+}
+
+function selectPH(n){
+  const v=src.value; let idx=-1,c=0;
+  for(let i=0;i<v.length;i++){ if(v[i]==='#'){ if(c===n){idx=i;break;} c++; } }
+  if(idx<0)return;
+  src.selectionStart=idx; src.selectionEnd=idx+1;
+  markActive(); drawSrc();
+}
+
+function markActive(){
+  const v=src.value, s0=src.selectionStart;
+  let n=-1;
+  if(v[s0]==='#'&&src.selectionEnd===s0+1){ n=0; for(let i=0;i<s0;i++) if(v[i]==='#') n++; }
+  preview.querySelectorAll('.ph-box').forEach(b=>b.classList.toggle('act',+b.dataset.ph===n));
+}
+
+function nextSlot(){
+  const v=src.value; let i=v.indexOf('#',src.selectionEnd); if(i<0)i=v.indexOf('#');
+  if(i<0){ exitGroup(); return; }
+  src.selectionStart=i;src.selectionEnd=i+1;
+  markActive(); drawSrc();
+}
+
+function smartDelete(){
+  const v=src.value, a=src.selectionStart, b=src.selectionEnd; pushUndo();
+  if(b>a){ src.value=v.slice(0,a)+v.slice(b); setCaret(a); render(); return; }
+  if(!a) return;
+  let st=a-1;
+  if(v[a-1]==='}'){
+    let d=1; st=a-2;
+    while(st>=0&&d){ if(v[st]==='}')d++; if(v[st]==='{')d--; if(d)st--; }
+    while(st>0&&v[st-1]==='}'){ let d2=1,k=st-2; while(k>=0&&d2){ if(v[k]==='}')d2++; if(v[k]==='{')d2--; if(d2)k--; } st=k; }
+    const pre=v.slice(0,st).match(/(\\[a-zA-Z]+)(\[[^\]]*\])?$/);
+    if(pre) st-=pre[0].length;
+  } else {
+    const m=v.slice(0,a).match(/\\(left|right)(\\[a-zA-Z]+|.)?$/) || v.slice(0,a).match(/\\[a-zA-Z]+$/);
+    if(m) st=a-m[0].length;
+  }
+  src.value=v.slice(0,st)+v.slice(a); setCaret(st); render();
+}
+
+function setCaret(p){ src.selectionStart=src.selectionEnd=p; markActive(); drawSrc(); }
+function move(d){
+  const cur=(src.selectionEnd>src.selectionStart&&d>0)?src.selectionEnd:src.selectionStart;
+  setCaret(Math.max(0, Math.min(src.value.length, cur + d)));
+}
+function exitGroup(){
+  const v=src.value; let depth=0;
+  for(let i=src.selectionEnd;i<v.length;i++){
+    if(v.startsWith('\\right',i)&&!depth){ const m=/^\\right(\\[a-zA-Z]+|.)?/.exec(v.slice(i)); setCaret(i+(m?m[0].length:6)); return; }
+    if(v[i]==='{')depth++;
+    else if(v[i]==='}'){
+      if(!depth){ setCaret(i+1); return; }
+      depth--;
+    }
+  }
+  setCaret(v.length);
+}
+
+function drawSrc(){
+  const view=$('#srcView'); if(!view)return;
+  const v=src.value, a=src.selectionStart, b=src.selectionEnd;
+  if(!v){ view.innerHTML='<span class="hint">\\frac{a}{b}</span>'; return; }
+  view.innerHTML = esc(v.slice(0,a)) + '<span class="caret"></span>' +
+    (b>a?'<span class="selxt">'+esc(v.slice(a,b))+'</span>':'') + esc(v.slice(b));
+}
+
+let rt;
+function render(){
+  drawSrc(); clearTimeout(rt);
+  rt=setTimeout(()=>{
+    const v=src.value;
+    if(!v.trim()){preview.innerHTML='<span class="ph">اختر رمزاً من اللوحة للبدء، أو اكتب دالة لرسمها وحلها</span>';drawSrc();return;}
+    try{
+      typeset(v,preview);
+      preview.querySelectorAll('.ph-box').forEach(b=>{ b.onclick=(ev)=>{ev.stopPropagation();selectPH(+b.dataset.ph);}; });
+      markActive(); drawSrc();
+      if($('#graphWrap').classList.contains('show')) drawGraph();
+    }catch(e){ preview.textContent=v; }
+  },60);
+}
+
+function buildTabs(){
+  tabsEl.innerHTML='';
+  CATS.forEach(c=>{const b=document.createElement('button');b.className='tab';b.textContent=c.name;
+    b.setAttribute('aria-selected',c.id===active);
+    b.onclick=()=>{active=c.id;$('#q').value='';buildTabs();buildKeys();};tabsEl.appendChild(b);});
+  const f=document.createElement('button');f.className='tab';f.textContent='★ محفوظاتي';
+  f.setAttribute('aria-selected',active==='fav');
+  f.onclick=()=>{active='fav';$('#q').value='';buildTabs();buildKeys();};tabsEl.appendChild(f);
+}
+
+function keyBtn(it){
+  const b=document.createElement('button');
+  b.className='k '+(it.cls||''); b.type='button'; b.title=it.n||it.x;
+  const lab=document.createElement('span'); lab.className='lab';
+  try{ typeset(it.k,lab); }catch(e){ lab.textContent=it.k; }
+  b.appendChild(lab);
+  if(it.n){const c=document.createElement('span');c.className='cap';c.textContent=it.n;b.appendChild(c);}
+  b.onclick=()=>{
+    let x=it.x; if(arabicDigits&&/^\d$/.test(x))x=AR[+x];
+    if(it.cls&&it.cls.includes('exit')){ exitGroup(); return; }
+    if(it.cls&&it.cls.includes('over') && src.selectionEnd===src.selectionStart){
+      const st=elemStart(src.value,src.selectionStart);
+      if(st>=0){ x='\\frac{'+src.value.slice(st,src.selectionStart)+'}{#}'; src.selectionStart=st; }
+    }
+    if(x.startsWith('#') && src.selectionEnd===src.selectionStart){
+      const st=elemStart(src.value,src.selectionStart);
+      if(st>=0){ x=x.replace('#',src.value.slice(st,src.selectionStart)); src.selectionStart=st; }
+    }
+    insert(x);
+  };
+  return b;
+}
+
+function buildKeys(){
+  keysEl.innerHTML=''; keysEl.classList.remove('wide');
+  if(active==='fav'){
+    if(!favs.length){keysEl.innerHTML='<div class="empty">لا توجد معادلات محفوظة بعد. اضغط «★ حفظ» لحفظ أي معادلة.</div>';return;}
+    keysEl.classList.add('wide');
+    favs.slice().reverse().forEach(x=>{
+      const b=keyBtn({k:x,x:x,n:'',cls:'tmpl'});
+      keysEl.appendChild(b);
+    });
+    return;
+  }
+  const currentCat = CATS.find(c=>c.id===active) || CATS[0];
+  currentCat.keys.forEach(k=>keysEl.appendChild(keyBtn(k)));
+}
+
+function search(q){
+  q=q.trim(); keysEl.innerHTML=''; keysEl.classList.remove('wide');
+  if(!q){buildKeys();return;}
+  const hits=[];
+  CATS.forEach(c=>c.keys.forEach(k=>{ if((k.n&&k.n.includes(q))||k.x.includes(q)||c.name.includes(q))hits.push(k); }));
+  if(!hits.length){keysEl.innerHTML='<div class="empty">لا نتائج مطابقة.</div>';return;}
+  hits.slice(0,60).forEach(k=>keysEl.appendChild(keyBtn(k)));
+}
+
+const gCanvas = $('#graphCanvas');
+let gCtx = gCanvas ? gCanvas.getContext('2d') : null;
+let gScale = 32;
+let gOrigin = { x: 0, y: 0 };
+
+function resizeGraph(){
+  if(!gCanvas) return;
+  gCanvas.width = gCanvas.parentElement.clientWidth;
+  gCanvas.height = gCanvas.parentElement.clientHeight;
+  if(gOrigin.x === 0 && gOrigin.y === 0){
+    gOrigin.x = gCanvas.width / 2;
+    gOrigin.y = gCanvas.height / 2;
+  }
+  drawGraph();
+}
+
+function drawGraph(){
+  if(!gCtx || !$('#graphWrap').classList.contains('show')) return;
+  const w = gCanvas.width, h = gCanvas.height;
+  gCtx.clearRect(0, 0, w, h);
+
+  gCtx.strokeStyle = '#16233B';
+  gCtx.lineWidth = 1;
+  gCtx.beginPath();
+  for(let x = gOrigin.x % gScale; x < w; x += gScale){ gCtx.moveTo(x, 0); gCtx.lineTo(x, h); }
+  for(let y = gOrigin.y % gScale; y < h; y += gScale){ gCtx.moveTo(0, y); gCtx.lineTo(w, y); }
+  gCtx.stroke();
+
+  gCtx.strokeStyle = '#388BFD';
+  gCtx.lineWidth = 2;
+  gCtx.beginPath();
+  gCtx.moveTo(0, gOrigin.y); gCtx.lineTo(w, gOrigin.y);
+  gCtx.moveTo(gOrigin.x, 0); gCtx.lineTo(gOrigin.x, h);
+  gCtx.stroke();
+
+  const ascii = toAscii(src.value).replace(/y=/g,'').replace(/f\(x\)=/g,'');
+  if(!ascii || !ascii.includes('x')) return;
+
+  gCtx.strokeStyle = '#FF3856';
+  gCtx.lineWidth = 3;
+  gCtx.beginPath();
+  let first = true;
+
+  for(let px = 0; px < w; px += 2){
+    const xVal = (px - gOrigin.x) / gScale;
+    try {
+      const yVal = evalA(ascii, { x: xVal });
+      if(isFinite(yVal)){
+        const py = gOrigin.y - (yVal * gScale);
+        if(first){ gCtx.moveTo(px, py); first = false; }
+        else { gCtx.lineTo(px, py); }
+      } else { first = true; }
+    } catch(e) { first = true; }
+  }
+  gCtx.stroke();
+}
+
+const sCanvas = $('#scratchpad');
+let sCtx = sCanvas.getContext('2d');
+let isDrawing = false;
+
+function resizeScratchpad(){
+  sCanvas.width = sCanvas.parentElement.clientWidth;
+  sCanvas.height = sCanvas.parentElement.clientHeight;
+  sCtx.strokeStyle = '#FF3856';
+  sCtx.lineWidth = 3;
+  sCtx.lineCap = 'round';
+  sCtx.lineJoin = 'round';
+}
+
+sCanvas.addEventListener('pointerdown', e => {
+  if(!sCanvas.classList.contains('active')) return;
+  isDrawing = true;
+  sCtx.beginPath();
+  sCtx.moveTo(e.offsetX, e.offsetY);
+});
+sCanvas.addEventListener('pointermove', e => {
+  if(!isDrawing) return;
+  sCtx.lineTo(e.offsetX, e.offsetY);
+  sCtx.stroke();
+});
+window.addEventListener('pointerup', () => isDrawing = false);
+
+$('#penToggle').onclick = e => {
+  const on = sCanvas.classList.toggle('active');
+  e.target.classList.toggle('on', on);
+  if(on) toast('✏️ تم تفعيل وضع القلم — يمكنك الرسم والحل يدوياً');
+  else toast('تم إيقاف وضع القلم');
+};
+$('#clrPen').onclick = () => {
+  sCtx.clearRect(0,0,sCanvas.width,sCanvas.height);
+  toast('تم مسح المسودة');
+};
+
+function toAscii(tex){
+  let t=tex.replace(/#/g,'');
+  t=t.replace(/[\u0660-\u0669]/g,d=>String(d.charCodeAt(0)-0x0660));
+  t=t.replace(/\\text\{[^{}]*\}/g,'');
+  for(let i=0;i<6;i++){
+    t=t.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))');
+    t=t.replace(/\\sqrt\[([^\]]*)\]\{([^{}]*)\}/g,'(($2)^(1/($1)))');
+    t=t.replace(/\\sqrt\{([^{}]*)\}/g,'sqrt($1)');
+    t=t.replace(/\^\{([^{}]*)\}/g,'^($1)');
+  }
+  t=t.replace(/\\times|\\cdot/g,'*').replace(/\\div/g,'/');
+  t=t.replace(/\\pi/g,'pi').replace(/\\theta/g,'x');
+  t=t.replace(/\\(sin|cos|tan|ln|log|sinh|cosh|tanh)/g,'$1');
+  t=t.replace(/\\[a-zA-Z]+/g,'').replace(/[{}\\]/g,'');
+  t=t.replace(/\u2212/g,'-').replace(/\s+/g,'');
+  return t;
+}
+
+const FN1={sqrt:Math.sqrt,abs:Math.abs,ln:Math.log,log:Math.log10,exp:Math.exp,
+  sin:x=>Math.sin(x*Math.PI/180),cos:x=>Math.cos(x*Math.PI/180),tan:x=>Math.tan(x*Math.PI/180)};
+
+function evalA(str,vars){
+  const T=[]; let i=0;
+  while(i<str.length){
+    const c=str[i];
+    if(/[0-9.]/.test(c)){ let j=i; while(j<str.length&&/[0-9.]/.test(str[j]))j++; T.push({t:'n',v:parseFloat(str.slice(i,j))}); i=j; }
+    else if(/[a-zA-Z]/.test(c)){ let j=i; while(j<str.length&&/[a-zA-Z]/.test(str[j]))j++; T.push({t:'id',v:str.slice(i,j)}); i=j; }
+    else { T.push({t:c}); i++; }
+  }
+  let pIdx=0;
+  const peek=()=>T[pIdx], eat=t=>{if(T[pIdx]&&T[pIdx].t===t){pIdx++;return true;}return false;};
+  function expr(){ let v=term(); while(peek()&&(peek().t==='+'||peek().t==='-')){ const op=T[pIdx++].t; const r=term(); v=op==='+'?v+r:v-r; } return v; }
+  function term(){ let v=power(); while(peek()&&(peek().t==='*'||peek().t==='/')){ const op=T[pIdx++].t; const r=power(); v=op==='*'?v*r:v/r; } return v; }
+  function power(){ const b=prim(); if(peek()&&peek().t==='^'){ pIdx++; return Math.pow(b,power()); } return b; }
+  function prim(){
+    if(eat('-')) return -prim();
+    const p=peek(); if(!p) return 0;
+    if(p.t==='n'){ pIdx++; return p.v; }
+    if(p.t==='('){ pIdx++; const v=expr(); eat(')'); return v; }
+    if(p.t==='id'){ pIdx++;
+      if(FN1[p.v]){ eat('('); const a=expr(); eat(')'); return FN1[p.v](a); }
+      if(p.v==='pi') return Math.PI; if(p.v==='e') return Math.E;
+      if(vars && p.v in vars) return vars[p.v];
+      return 0;
+    }
+    pIdx++; return 0;
+  }
+  return expr();
+}
+
+function solveCurrent(){
+  const tex = src.value.replace(/#/g,'').trim();
+  if(!tex){ toast('الرجاء إدخال معادلة أولاً'); return; }
+  const a = toAscii(tex);
+  const box = $('#solbox'), out = $('#solout');
+  box.style.display = 'flex';
+
+  try {
+    if(a.includes('=')){
+      const parts = a.split('=');
+      const diff = evalA(parts[0]) - evalA(parts[1]);
+      out.innerHTML = `<span class="solout"><b>التحقق:</b> الفرق بين الطرفين = ${Math.round(diff*10000)/10000}</span>`;
+    } else {
+      const res = evalA(a);
+      out.innerHTML = `<div class="mrow" style="font-size:24px; color:#388BFD;">= ${Math.round(res*100000)/100000}</div>`;
+    }
+  } catch(e) {
+    out.innerHTML = `<span class="solerr">تعذر الحل المباشر</span>`;
+  }
+}
+
+$('#solve').onclick = solveCurrent;
+$('#solClose').onclick = () => $('#solbox').style.display='none';
+$('#solIns').onclick = () => {
+  const txt = $('#solout').innerText.replace('=','').trim();
+  if(txt) insert(' = ' + txt);
+  $('#solbox').style.display='none';
+};
+
+$('#graphBtn').onclick = e => {
+  const g = $('#graphWrap');
+  const on = g.classList.toggle('show');
+  e.target.classList.toggle('on', on);
+  if(on){ resizeGraph(); toast('📈 تم فتح الرسم البياني 2D'); }
+};
+$('#graphClose').onclick = () => { $('#graphWrap').classList.remove('show'); $('#graphBtn').classList.remove('on'); };
+$('#graphReset').onclick = () => { gOrigin.x = gCanvas.width/2; gOrigin.y = gCanvas.height/2; drawGraph(); };
+
+$('#bk').onclick=smartDelete;
+$('#left').onclick=()=>move(-1);
+$('#right').onclick=()=>move(1);
+$('#slot').onclick=nextSlot;
+$('#out').onclick=exitGroup;
+$('#nl').onclick=()=>{ setCaret(src.value.length); insert('\\\\ '); };
+$('#clr').onclick=()=>{if(!src.value)return;pushUndo();src.value='';render();};
+$('#undo').onclick=()=>{if(!undoStack.length){toast('لا يوجد تراجع');return;}src.value=undoStack.pop();render();};
+
+src.addEventListener('input',render);
+$('#q').addEventListener('input',e=>search(e.target.value));
+
+$('#texToggle').onclick=e=>{
+  document.body.classList.toggle('showtex');
+  e.target.classList.toggle('on',document.body.classList.contains('showtex'));
+};
+
+$('#kbToggle').onclick=e=>{
+  if(src.hasAttribute('readonly')){
+    src.removeAttribute('readonly'); e.target.classList.add('on');
+    document.body.classList.add('typing'); src.focus();
+  }else{
+    src.setAttribute('readonly',''); e.target.classList.remove('on');
+    document.body.classList.remove('typing'); src.blur();
+  }
+};
+
+$('#digitToggle').onclick=e=>{
+  arabicDigits=!arabicDigits;
+  e.target.classList.toggle('on',arabicDigits);
+  e.target.textContent=arabicDigits?'١٢٣':'123';
+};
+
+$('#fav').onclick=async()=>{
+  const t=src.value.replace(/#/g,'').trim();
+  if(!t)return;
+  if(!favs.includes(t)) favs.push(t);
+  await store.set('mk_favs',favs);
+  toast('★ تم الحفظ في المفضلة');
+};
+
+$('#copyTex').onclick=()=>{ navigator.clipboard.writeText(src.value); toast('📋 تم نسخ كود LaTeX'); };
+$('#copyTxt').onclick=()=>{ navigator.clipboard.writeText(toAscii(src.value)); toast('📝 تم نسخ النص'); };
+$('#websolve').onclick=()=>{ window.open('https://www.wolframalpha.com/input?i='+encodeURIComponent(toAscii(src.value)),'_blank'); };
+
+window.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.ctrlKey){ e.preventDefault(); $('#nl').click(); }
+  else if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); solveCurrent(); }
+  else if(e.key === 'z' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); $('#undo').click(); }
+});
+
+window.addEventListener('resize', () => { resizeGraph(); resizeScratchpad(); });
+buildTabs(); buildKeys(); drawSrc();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+(async()=>{
+  favs = (await store.get('mk_favs')) || [];
+  resizeScratchpad();
+})();
+</script>
+</body>
+</html>
